@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templates/modeloSistema.xhtml">
+
+	<ui:define name="menu">
+		<ui:include src="/includes/menuPrincipal.xhtml" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:form id="frmVendedorListagem">
+			<p:dataTable id="tblVendedor" var="item" paginator="true" rows="12"
+				value="#{VendedorBean.vendedores}"
+				filteredValue="#{VendedorBean.vendedoresFiltrados}"
+				emptyMessage="Nenhum registro encontrado.">
+				<f:facet name="header">
+					<h:outputText value="Vendedor - Listagem" />
+					<p:commandButton
+						style="float:right; position: absolute; right: 2vw;"
+						value="Limpar Filtros"
+						onclick="PF('tabelaVendedorListagem').clearFilters()" />
+				</f:facet>
+
+				<p:column headerText="Código" sortBy="#{item.idVendedor}"
+					filterBy="#{item.idVendedor}">
+					<h:outputText value="#{item.idVendedor}" />
+				</p:column>
+
+				<p:column headerText="Nome" sortBy="#{item.nomeVendedor}"
+					filterBy="#{item.nomeVendedor}">
+					<h:outputText value="#{item.nomeVendedor}" />
+				</p:column>
+
+				<p:column headerText="Opções">
+					<p:commandButton icon="ui-icon-trash"
+						oncomplete="PF('dlgVendedorExcluir').show();"
+						update=":frmVendedorExcluir:pnlVendedorExcluir">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{VendedorBean.vendedor}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-pencil"
+						oncomplete="PF('dlgVendedorEditar').show();"
+						update=":frmVendedorEditar:pnlVendedorEditar">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{VendedorBean.vendedor}" />
+					</p:commandButton>
+				</p:column>
+
+				<f:facet name="footer">
+					<p:commandButton value="Novo"
+						actionListener="#{VendedorBean.prepararNovo}"
+						oncomplete="PF('dlgVendedorNovo').show();"
+						update=":frmVendedorNovo:pnlVendedorNovo" />
+				</f:facet>
+			</p:dataTable>
+		</h:form>
+
+		<p:dialog widgetVar="dlgVendedorNovo" closable="true"
+			draggable="false" resizable="false" modal="true" appendTo="@(body)"
+			header="Vendedor - Novo">
+			<h:form id="frmVendedorNovo">
+				<h:panelGrid id="pnlVendedorNovo" columns="2">
+					<p:outputLabel for="txtIDVendedorNovo" value="Código: " />
+					<p:inputText id="txtIDVendedorNovo" size="3" maxlength="5"
+						value="#{VendedorBean.vendedor.idVendedor}" required="true"
+						requiredMessage="Campo código é obrigatório" />
+
+					<p:outputLabel for="txtNomeVendedorNovo" value="Nome: " />
+					<p:inputText id="txtNomeVendedorNovo" size="50" maxlength="70"
+						value="#{VendedorBean.vendedor.nomeVendedor}" required="true"
+						requiredMessage="Campo nome é obrigatório" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Gravar"
+						actionListener="#{VendedorBean.novo}"
+						oncomplete="verificarObrigatoriedade(xhr, status, args, 'dlgVendedorNovo');"
+						update=":frmVendedorListagem:tblVendedor :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgVendedorNovo').hide();" process="@this">
+						<p:resetInput target="pnlVendedorNovo" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgVendedorExcluir" closable="false" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Vendedor - Excluir">
+			<h:form id="frmVendedorExcluir">
+				<h:panelGrid id="pnlVendedorExcluir" columns="2">
+					<p:outputLabel value="Código:" />
+					<h:outputText value="#{VendedorBean.vendedor.idVendedor}" />
+
+					<p:outputLabel value="Nome:" />
+					<h:outputText value="#{VendedorBean.vendedor.nomeVendedor}" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Excluir"
+						actionListener="#{VendedorBean.excluir}"
+						oncomplete="PF('dlgVendedorExcluir').hide();"
+						update=":frmVendedorListagem:tblVendedor :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgVendedorExcluir').hide();" process="@this">
+						<p:resetInput target="pnlVendedorExcluir" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgVendedorEditar" closable="false" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Vendedor - Editar">
+			<h:form id="frmVendedorEditar">
+				<h:panelGrid id="pnlVendedorEditar" columns="2">
+					<p:outputLabel for="txtIDVendedorEditar" value="Código:" />
+					<h:outputText id="txtIDVendedorEditar"
+						value="#{VendedorBean.vendedor.idVendedor}" size="3"
+						maxlength="5" />
+						
+					<p:outputLabel for="txtNomeVendedorEditar" value="Nome:" />
+					<p:inputText id="txtNomeVendedorEditar"
+						value="#{VendedorBean.vendedor.nomeVendedor}" size="50"
+						maxlength="70" required="true"
+						requiredMessage="Campo nome é obrigatório" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Editar"
+						actionListener="#{VendedorBean.editar}"
+						oncomplete="verificarObrigatoriedade(xhr, status, args, 'dlgVendedorEditar', 'tabelaVendedor');"
+						update=":frmVendedorListagem:tblVendedor :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgVendedorEditar').hide();" process="@this">
+						<p:resetInput target="pnlVendedorEditar" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>

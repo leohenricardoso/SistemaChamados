@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templates/modeloSistema.xhtml">
+
+	<ui:define name="menu">
+		<ui:include src="/includes/menuPrincipal.xhtml" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<f:event listener="#{ChamadoBean.carregarListagem}"
+			type="preRenderView" />
+		<h:form id="frmChamadoListagem">
+			<p:dataTable id="tblChamadoListagem"
+				widgetVar="tabelaChamadoListagem" value="#{ChamadoBean.chamados}"
+				var="item" emptyMessage="Nenhum registro encontrado."
+				paginator="true" rows="12"
+				filteredValue="#{ChamadoBean.chamadosFiltrados}">
+				<f:facet name="header">
+					<h:outputText value="Chamados" />
+					<p:commandButton
+						style="float:right; position: absolute; right: 2vw;"
+						value="Atualizar"
+						onclick="PF('tabelaChamadoListagem').clearFilters()" />
+				</f:facet>
+				<p:column headerText="Cód. Chamado" sortBy="#{item.idChamado}"
+					filterBy="#{item.idChamado}">
+					<h:outputText value="#{item.idChamado}" />
+				</p:column>
+
+				<p:column headerText="Descrição" sortBy="#{item.descricaoChamado}"
+					filterBy="#{item.descricaoChamado}">
+					<h:outputText value="#{item.descricaoChamado}" />
+				</p:column>
+
+				<p:column headerText="Cliente" sortBy="#{item.cliente.nomeCliente}"
+					filterBy="#{item.cliente.nomeCliente}">
+					<h:outputText value="#{item.cliente.nomeCliente}" />
+				</p:column>
+
+				<p:column headerText="Data retorno" sortBy="#{item.dataRetorno}"
+					filterBy="#{item.dataRetorno}">
+					<h:outputText value="#{item.dataRetorno}">
+						<f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Hora retorno" sortBy="#{item.dataRetorno}">
+					<h:outputText value="#{item.dataRetorno}">
+						<f:convertDateTime type="time" pattern="HH:mm" />
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Status Chamado"
+					sortBy="#{item.status.descricaoStatus}"
+					filterBy="#{item.status.descricaoStatus}">
+					<h:outputText value="#{item.status.descricaoStatus}"
+						styleClass="#{(StatusBean.status.idStatus eq 1) ? concluido : null}" />
+
+				</p:column>
+
+				<p:column headerText="Opções">
+					<p:commandButton icon="ui-icon-trash"
+						oncomplete="PF('dlgChamadoExcluir').show();"
+						update=":frmChamadoExcluir:pnlChamadoExcluir">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{ChamadoBean.chamado}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-pencil"
+						actionListener="#{ChamadoBean.prepararNovo}"
+						oncomplete="PF('dlgChamadoEditar').show();"
+						update=":frmChamadoEditar:pnlChamadoEditar">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{ChamadoBean.chamado}" />
+					</p:commandButton>
+
+
+					<p:commandButton value="Detalhes"
+						oncomplete="PF('dlgChamadoDetalhes').show();"
+						update=":frmChamadoDetalhes:pnlChamadoDetalhes">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{ChamadoBean.chamado}" />
+					</p:commandButton>
+
+
+				</p:column>
+				<f:facet name="footer">
+					<p:commandButton value="Novo"
+						actionListener="#{ChamadoBean.prepararNovo}"
+						oncomplete="PF('dlgChamadoNovo').show();"
+						update=":frmChamadoNovo:pnlChamadoNovo" />
+				</f:facet>
+			</p:dataTable>
+		</h:form>
+
+		<p:dialog widgetVar="dlgChamadoNovo" closable="true" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Chamado - Novo">
+			<h:form id="frmChamadoNovo">
+				<h:panelGrid id="pnlChamadoNovo" columns="2">
+					<p:outputLabel value="Descrição: *" />
+					<p:inputTextarea value="#{ChamadoBean.chamado.descricaoChamado}"
+						maxlength="200" cols="80" rows="5" required="true"
+						requiredMessage="Campo descrição é obrigatório.">
+					</p:inputTextarea>
+
+					<h:outputText value="Data e Hora:" />
+					<p:calendar id="datetime"
+						value="#{ChamadoBean.chamado.dataRetorno}"
+						pattern="dd/MM/yyyy HH:mm:ss" locale="pt" />
+
+
+					<p:outputLabel value="Observacao: " />
+					<p:inputTextarea value="#{ChamadoBean.chamado.observacaoChamado}"
+						maxlength="200" cols="80" rows="5" />
+
+					<p:outputLabel value="Cliente: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.cliente.idCliente}"
+						filter="true" required="true"
+						requiredMessage="Campo cliente é obrigatório">
+						<f:selectItem itemValue="" itemLabel="Selecione um cliente" />
+						<f:selectItems value="#{ChamadoBean.comoCliente}" var="item"
+							itemValue="#{item.idCliente}" itemLabel="#{item.nomeCliente}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Vendedor: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.vendedor.idVendedor}"
+						filter="true" required="true"
+						requiredMessage="Campo vendedor é obrigatório">
+						<f:selectItem itemValue="" itemLabel="Selecione um vendedor" />
+						<f:selectItems value="#{ChamadoBean.comboVendedores}" var="item"
+							itemValue="#{item.idVendedor}" itemLabel="#{item.nomeVendedor}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Status: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.status.idStatus}"
+						filter="true" required="true"
+						requiredMessage="Campo status é obrigatório">
+						<f:selectItem itemValue="" itemLabel="Selecione um status" />
+						<f:selectItems value="#{ChamadoBean.comboStatus}" var="item"
+							itemValue="#{item.idStatus}" itemLabel="#{item.descricaoStatus}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+				<h:panelGrid columns="2">
+					<p:commandButton value="Gravar"
+						actionListener="#{ChamadoBean.novo}"
+						update=":msgGlobal :frmChamadoListagem:tblChamadoListagem"
+						onclick="PF('dlgChamadoNovo').hide();" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgChamadoNovo').hide();" process="@this">
+						<p:resetInput target="pnlChamadoNovo" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgChamadoExcluir" closable="true"
+			draggable="false" resizable="false" modal="true" appendTo="@(body)"
+			header="Chamado - Excluir">
+			<h:form id="frmChamadoExcluir">
+				<h:panelGrid id="pnlChamadoExcluir" columns="2">
+					<p:outputLabel value="Descrição: " />
+					<h:inputTextarea value="#{ChamadoBean.chamado.descricaoChamado}"
+						readonly="true" maxlength="200" cols="40" rows="5" />
+
+					<p:outputLabel value="Data de retorno: " />
+					<p:outputLabel id="mask" value="#{ChamadoBean.chamado.dataRetorno}"
+						pattern="dd/MM/yyyy" mask="true">
+						<f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+					</p:outputLabel>
+
+
+					<p:outputLabel value="Hora de retorno: " />
+					<p:outputLabel id="mask1"
+						value="#{ChamadoBean.chamado.dataRetorno}" pattern="HH:mm"
+						mask="true">
+						<f:convertDateTime type="time" pattern="HH:mm" />
+					</p:outputLabel>
+
+					<p:outputLabel value="Observacao: " />
+					<h:inputTextarea value="#{ChamadoBean.chamado.observacaoChamado}"
+						readonly="true" maxlength="200" cols="40" rows="5" />
+
+					<p:outputLabel value="Cliente: " />
+					<p:outputLabel value="#{ChamadoBean.chamado.cliente.nomeCliente}" />
+
+
+					<p:outputLabel value="Vendedor: " />
+					<p:outputLabel value="#{ChamadoBean.chamado.vendedor.nomeVendedor}" />
+
+
+					<p:outputLabel value="Status: " />
+					<p:outputLabel
+						value="#{ChamadoBean.chamado.status.descricaoStatus}" />
+
+				</h:panelGrid>
+				<h:panelGrid columns="2">
+					<p:commandButton value="Excluir"
+						actionListener="#{ChamadoBean.excluir}"
+						onclick="PF('dlgChamadoExcluir').hide();"
+						update=":frmChamadoListagem:tblChamadoListagem :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgChamadoExcluir').hide();" process="@this">
+						<p:resetInput target="pnlChamadoExcluir" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgChamadoEditar" closable="true"
+			draggable="false" resizable="false" modal="true" appendTo="@(body)"
+			header="Chamado - Editar">
+			<h:form id="frmChamadoEditar">
+				<h:panelGrid id="pnlChamadoEditar" columns="2">
+					<p:outputLabel value="Descrição: *" />
+					<p:inputTextarea value="#{ChamadoBean.chamado.descricaoChamado}"
+						maxlength="200" cols="80" rows="5" required="true"
+						requiredMessage="Campo descrição é obrigatório.">
+					</p:inputTextarea>
+
+					<h:outputText value="Data e Hora:" />
+					<p:calendar id="datetime"
+						value="#{ChamadoBean.chamado.dataRetorno}"
+						pattern="dd/MM/yyyy HH:mm:ss" locale="pt"/>
+
+
+					<p:outputLabel value="Observacao: " />
+					<p:inputTextarea value="#{ChamadoBean.chamado.observacaoChamado}"
+						maxlength="200" cols="80" rows="5" />
+
+					<p:outputLabel value="Cliente: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.cliente.idCliente}"
+						filter="true" required="true"
+						requiredMessage="Campo cliente é obrigatório">
+						<f:selectItems value="#{ChamadoBean.comoCliente}" var="item"
+							itemValue="#{item.idCliente}" itemLabel="#{item.nomeCliente}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Vendedor: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.vendedor.idVendedor}"
+						filter="true" required="true"
+						requiredMessage="Campo vendedor é obrigatório">
+						<f:selectItems value="#{ChamadoBean.comboVendedores}" var="item"
+							itemValue="#{item.idVendedor}" itemLabel="#{item.nomeVendedor}" />
+					</p:selectOneMenu>
+
+					<p:outputLabel value="Status: " />
+					<p:selectOneMenu value="#{ChamadoBean.chamado.status.idStatus}"
+						filter="true" required="true"
+						requiredMessage="Campo status é obrigatório">
+						<f:selectItems value="#{ChamadoBean.comboStatus}" var="item"
+							itemValue="#{item.idStatus}" itemLabel="#{item.descricaoStatus}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+				<h:panelGrid columns="2">
+					<p:commandButton value="Editar"
+						actionListener="#{ChamadoBean.editar}"
+						update=":frmChamadoListagem:tblChamadoListagem :msgGlobal"
+						onclick="PF('dlgChamadoEditar').hide();" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgChamadoEditar').hide();" process="@this">
+						<p:resetInput target="pnlChamadoEditar" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgChamadoDetalhes" closable="true"
+			draggable="false" resizable="false" modal="true" appendTo="@(body)"
+			header="Chamado - Detalhes">
+			<h:form id="frmChamadoDetalhes">
+				<h:panelGrid id="pnlChamadoDetalhes" columns="2">
+
+					<p:outputLabel value="ID Chamado: " />
+					<p:outputLabel value="#{ChamadoBean.chamado.idChamado}" />
+
+					<p:outputLabel value="Data do chamado: " />
+					<p:outputLabel id="mask" value="#{ChamadoBean.chamado.dataAtual}"
+						pattern="dd/MM/yyyy" mask="true">
+						<f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+					</p:outputLabel>
+
+					<p:outputLabel value="Horario do chamado: " />
+					<p:outputLabel id="mask1" value="#{ChamadoBean.chamado.dataAtual}"
+						pattern="HH:mm" mask="true">
+						<f:convertDateTime type="time" pattern="HH:mm" />
+					</p:outputLabel>
+
+					<p:outputLabel value="-----------------" />
+					<p:outputLabel value="-----------------" />
+
+					<p:outputLabel value="Descrição: " />
+					<h:inputTextarea value="#{ChamadoBean.chamado.descricaoChamado}"
+						readonly="true" maxlength="200" cols="40" rows="5" />
+
+					<p:outputLabel value="Data de retorno: " />
+					<p:outputLabel id="mask3"
+						value="#{ChamadoBean.chamado.dataRetorno}" pattern="dd/MM/yyyy"
+						mask="true">
+						<f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+					</p:outputLabel>
+
+					<p:outputLabel value="Hora de retorno: " />
+					<p:outputLabel id="mask4"
+						value="#{ChamadoBean.chamado.dataRetorno}" pattern="HH:mm"
+						mask="true">
+						<f:convertDateTime type="time" pattern="HH:mm" />
+					</p:outputLabel>
+
+					<p:outputLabel value="Observacao: " />
+					<h:inputTextarea value="#{ChamadoBean.chamado.observacaoChamado}"
+						readonly="true" maxlength="200" cols="40" rows="5" />
+
+					<p:outputLabel value="Cliente: " />
+					<p:outputLabel value="#{ChamadoBean.chamado.cliente.nomeCliente}" />
+
+					<p:outputLabel value="Status: " />
+					<p:outputLabel
+						value="#{ChamadoBean.chamado.status.descricaoStatus}" />
+
+					<p:outputLabel value="-----------------" />
+					<p:outputLabel value="-----------------" />
+
+					<p:outputLabel value="Vendedor: " />
+					<p:outputLabel value="#{ChamadoBean.chamado.vendedor.nomeVendedor}" />
+
+				</h:panelGrid>
+				<h:panelGrid columns="1">
+					<p:commandButton value="Fechar"
+						onclick="PF('dlgChamadoDetalhes').hide();" process="@this">
+						<p:resetInput target="pnlChamadoDetalhes" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>

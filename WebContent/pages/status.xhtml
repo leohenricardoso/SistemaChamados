@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templates/modeloSistema.xhtml">
+
+	<ui:define name="menu">
+		<ui:include src="/includes/menuPrincipal.xhtml" />
+	</ui:define>
+
+	<ui:define name="conteudo">
+		<h:form id="frmStatusListagem">
+			<p:dataTable id="tblStatus" var="item" paginator="true" rows="12"
+				value="#{StatusBean.listaStatus}"
+				filteredValue="#{StatusBean.statusFiltrados}"
+				emptyMessage="Nenhum registro encontrado.">
+				<f:facet name="header">
+					<h:outputText value="Status - Listagem" />
+					<p:commandButton
+						style="float:right; position: absolute; right: 2vw;"
+						value="Limpar Filtros"
+						onclick="PF('tabelaStatusListagem').clearFilters()" />
+				</f:facet>
+
+				<p:column headerText="Código" sortBy="#{item.idStatus}"
+					filterBy="#{item.idStatus}">
+					<h:outputText value="#{item.idStatus}" />
+				</p:column>
+
+				<p:column headerText="Descrição" sortBy="#{item.descricaoStatus}"
+					filterBy="#{item.descricaoStatus}">
+					<h:outputText value="#{item.descricaoStatus}" />
+				</p:column>
+
+				<p:column headerText="Opções">
+					<p:commandButton icon="ui-icon-trash"
+						oncomplete="PF('dlgStatusExcluir').show();"
+						update=":frmStatusExcluir:pnlStatusExcluir">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{StatusBean.status}" />
+					</p:commandButton>
+
+					<p:commandButton icon="ui-icon-pencil"
+						oncomplete="PF('dlgStatusEditar').show();"
+						update=":frmStatusEditar:pnlStatusEditar">
+						<f:setPropertyActionListener value="#{item}"
+							target="#{StatusBean.status}" />
+					</p:commandButton>
+				</p:column>
+
+				<f:facet name="footer">
+					<p:commandButton value="Novo"
+						actionListener="#{StatusBean.prepararNovo}"
+						oncomplete="PF('dlgStatusNovo').show();"
+						update=":frmStatusNovo:pnlStatusNovo" />
+				</f:facet>
+			</p:dataTable>
+		</h:form>
+
+		<p:dialog widgetVar="dlgStatusNovo" closable="true" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Status - Novo">
+			<h:form id="frmStatusNovo">
+				<h:panelGrid id="pnlStatusNovo" columns="2">
+					<p:outputLabel for="txtIDStatusNovo" value="ID: " />
+					<p:inputText id="txtIDStatusNovo" size="3" maxlength="5"
+						value="#{StatusBean.status.idStatus}" required="true"
+						requiredMessage="Campo Status é obrigatório" />
+						
+					<p:outputLabel for="txtDescStatusNovo" value="Descrição: " />
+					<p:inputText id="txtDescStatusNovo" size="30" maxlength="50"
+						value="#{StatusBean.status.descricaoStatus}" required="true"
+						requiredMessage="Campo descrição é obrigatório" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Gravar"
+						actionListener="#{StatusBean.novo}"
+						oncomplete="verificarObrigatoriedade(xhr, status, args, 'dlgStatusNovo');"
+						update=":frmStatusListagem:tblStatus :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgStatusNovo').hide();" process="@this">
+						<p:resetInput target="pnlStatusNovo" />
+					</p:commandButton>
+				</h:panelGrid>
+
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgStatusExcluir" closable="false" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Status - Excluir">
+			<h:form id="frmStatusExcluir">
+				<h:panelGrid id="pnlStatusExcluir" columns="2">
+					<p:outputLabel value="Código:" />
+					<h:outputText value="#{StatusBean.status.idStatus}" />
+
+					<p:outputLabel value="Descrição:" />
+					<h:outputText value="#{StatusBean.status.descricaoStatus}" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Excluir"
+						actionListener="#{StatusBean.excluir}"
+						oncomplete="PF('dlgStatusExcluir').hide();"
+						update=":frmStatusListagem:tblStatus :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgStatusExcluir').hide();" process="@this">
+						<p:resetInput target="pnlStatusExcluir" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgStatusEditar" closable="false" draggable="false"
+			resizable="false" modal="true" appendTo="@(body)"
+			header="Status - Editar">
+			<h:form id="frmStatusEditar">
+				<h:panelGrid id="pnlStatusEditar" columns="2">
+					<p:outputLabel value="Código: *" />
+					<h:outputText value="#{StatusBean.status.idStatus}" size="3"
+						maxlength="5"/>
+
+					<h:outputLabel for="txtDescStatusEditar" value="Descrição:" />
+					<p:inputText id="txtDescStatusEditar"
+						value="#{StatusBean.status.descricaoStatus}" size="30"
+						maxlength="50" required="true"
+						requiredMessage="Campo descrição é obrigatório" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2">
+					<p:commandButton value="Editar"
+						actionListener="#{StatusBean.editar}"
+						oncomplete="verificarObrigatoriedade(xhr, status, args, 'dlgStatusEditar', 'tabelaStatus');"
+						update=":frmStatusListagem:tblStatus :msgGlobal" />
+					<p:commandButton value="Cancelar"
+						onclick="PF('dlgStatusEditar').hide();" process="@this">
+						<p:resetInput target="pnlStatusEditar" />
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>

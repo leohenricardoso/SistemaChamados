@@ -1,0 +1,43 @@
+@charset "ISO-8859-1";
+
+.ui-layout-north{
+	z-index: 20 !important;
+	overflow: visible !important; 
+}
+.ui-layout-north .ui-layout-unit-content{
+	overflow: visible !important; 
+}
+
+.ui-widget, .ui.widget .uiwidget{
+	font-size: 12px !important;
+}
+
+.fa-list-alt, .fa-user, .fa-users,
+.fa-check-circle{	
+	margin-right: 3px;
+	font-size: 16px;
+}
+
+.menuitem{
+	text-align: center;
+	margin: 0 15px;	
+}
+
+.concluido{
+	color: green;
+	background-image: none;
+}
+
+.em-andamento{
+	color: yellow;
+	background-image: none;
+}
+
+.cancelado{
+	color: red;
+	background-image: none;
+}
+
+.default{
+	background-image: none;
+}
